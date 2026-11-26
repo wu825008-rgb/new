@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>異分母分數加減互動實驗室</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --accent: #10b981;
+      --warn: #f59e0b;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --frac-a: #3b82f6;
+      --frac-b: #8b5cf6;
+      --frac-res: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 24px 16px 48px;
+    }
+
+    .container {
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      font-size: 1.85rem;
+      color: #0f172a;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+      margin-bottom: 20px;
+    }
+
+    .controls-top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .op-switch {
+      display: inline-flex;
+      background: #eef2ff;
+      padding: 4px;
+      border-radius: 12px;
+      gap: 4px;
+    }
+
+    .op-btn {
+      border: none;
+      background: transparent;
+      padding: 8px 18px;
+      border-radius: 9px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .op-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button.secondary-btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    button.secondary-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .equation-builder {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 16px 8px;
+    }
+
+    .fraction-input {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+    }
+
+    .fraction-input label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .fraction-input input {
+      width: 68px;
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      padding: 4px 6px;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    .fraction-input input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .divider-line {
+      width: 74px;
+      height: 3px;
+      background: #334155;
+      border-radius: 2px;
+    }
+
+    .symbol-big {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary);
+      padding: 0 4px;
+    }
+
+    .result-box {
+      min-width: 120px;
+      text-align: center;
+      background: #ecfdf5;
+      border: 2px solid #6ee7b7;
+      border-radius: 14px;
+      padding: 12px 16px;
+    }
+
+    .result-box .label {
+      font-size: 0.8rem;
+      color: #047857;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .fraction-display {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: #065f46;
+    }
+
+    .fraction-display .bar {
+      width: 100%;
+      min-width: 34px;
+      height: 3px;
+      background: currentColor;
+      margin: 2px 0;
+    }
+
+    .mixed-note {
+      font-size: 0.88rem;
+      color: #047857;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    .warning {
+      margin-top: 10px;
+      text-align: center;
+      color: #b45309;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    h2.section-title {
+      font-size: 1.15rem;
+      margin-bottom: 14px;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .visual-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .vis-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      background: #fafcff;
+    }
+
+    .vis-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .vis-sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .bar-track {
+      display: flex;
+      height: 34px;
+      border: 2px solid #334155;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f1f5f9;
+      margin-bottom: 8px;
+    }
+
+    .bar-cell {
+      flex: 1;
+      border-right: 1px solid rgba(51, 65, 85, 0.35);
+      transition: background 0.25s;
+    }
+
+    .bar-cell:last-child {
+      border-right: none;
+    }
+
+    .steps-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .step-item {
+      background: #f8fafc;
+      border-left: 4px solid var(--primary);
+      padding: 10px 14px;
+      border-radius: 0 10px 10px 0;
+      font-size: 0.96rem;
+    }
+
+    .step-item strong {
+      color: #0f172a;
+    }
+
+    @media (max-width: 600px) {
+      .equation-builder {
+        gap: 10px;
+      }
+      .fraction-input input {
+        width: 58px;
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🧩 異分母分數加減互動實驗室</h1>
+      <p>調整分子與分母，觀察「通分」與「分數條變化」，一步步看懂異分母加減！</p>
+    </header>
+
+    <section class="card">
+      <div class="controls-top">
+        <div class="op-switch" role="group" aria-label="選擇運算符號">
+          <button type="button" class="op-btn active" id="btnAdd" onclick="setOp('+')">加法（＋）</button>
+          <button type="button" class="op-btn" id="btnSub" onclick="setOp('-')">減法（－）</button>
+        </div>
+
+        <div class="action-btns">
+          <button type="button" class="secondary-btn" onclick="loadPreset(1, 2, 1, 3, '+')">範例：1/2 + 1/3</button>
+          <button type="button" class="secondary-btn" onclick="loadPreset(3, 4, 1, 6, '-')">範例：3/4 - 1/6</button>
+          <button type="button" class="secondary-btn" onclick="randomProblem()">🎲 隨機出題</button>
+        </div>
+      </div>
+
+      <div class="equation-builder">
+        <!-- 分數 A -->
+        <div class="fraction-input">
+          <label for="numA">分子 A</label>
+          <input type="number" id="numA" value="1" min="0" max="20" oninput="update()" />
+          <div class="divider-line"></div>
+          <input type="number" id="denA" value="2" min="1" max="12" oninput="update()" />
+          <label for="denA">分母 A</label>
+        </div>
+
+        <div class="symbol-big" id="opSymbol">＋</div>
+
+        <!-- 分數 B -->
+        <div class="fraction-input">
+          <label for="numB">分子 B</label>
+          <input type="number" id="numB" value="1" min="0" max="20" oninput="update()" />
+          <div class="divider-line"></div>
+          <input type="number" id="denB" value="3" min="1" max="12" oninput="update()" />
+          <label for="denB">分母 B</label>
+        </div>
+
+        <div class="symbol-big">＝</div>
+
+        <!-- 結果 -->
+        <div class="result-box">
+          <div class="label">最簡結果</div>
+          <div class="fraction-display" id="resultFrac">
+            <span>5</span>
+            <div class="bar"></div>
+            <span>6</span>
+          </div>
+          <div class="mixed-note" id="mixedNote"></div>
+        </div>
+      </div>
+
+      <div class="warning" id="warningBox"></div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">📊 通分後視覺化比較（以公分母等分）</h2>
+      <div class="visual-grid" id="visualGrid"></div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">📝 解題步驟</h2>
+      <ul class="steps-list" id="stepsList"></ul>
+    </section>
+  </div>
+
+  <script>
+    let currentOp = '+';
+
+    function gcd(a, b) {
+      a = Math.abs(a);
+      b = Math.abs(b);
+      while (b !== 0) {
+        const t = b;
+        b = a % b;
+        a = t;
+      }
+      return a || 1;
+    }
+
+    function lcm(a, b) {
+      return Math.abs(a * b) / gcd(a, b);
+    }
+
+    function setOp(op) {
+      currentOp = op;
+      document.getElementById('btnAdd').classList.toggle('active', op === '+');
+      document.getElementById('btnSub').classList.toggle('active', op === '-');
+      document.getElementById('opSymbol').textContent = op === '+' ? '＋' : '－';
+      update();
+    }
+
+    function loadPreset(nA, dA, nB, dB, op) {
+      document.getElementById('numA').value = nA;
+      document.getElementById('denA').value = dA;
+      document.getElementById('numB').value = nB;
+      document.getElementById('denB').value = dB;
+      setOp(op);
+    }
+
+    function randomProblem() {
+      const dens = [2, 3, 4, 5, 6, 8, 10, 12];
+      let dA = dens[Math.floor(Math.random() * dens.length)];
+      let dB = dens[Math.floor(Math.random() * dens.length)];
+      while (dB === dA) {
+        dB = dens[Math.floor(Math.random() * dens.length)];
+      }
+      const nA = Math.floor(Math.random() * (dA - 1)) + 1;
+      const nB = Math.floor(Math.random() * (dB - 1)) + 1;
+      const op = Math.random() < 0.5 ? '+' : '-';
+      loadPreset(nA, dA, nB, dB, op);
+    }
+
+    function renderBar(parts, filled, color) {
+      const safeParts = Math.min(Math.max(parts, 1), 60);
+      let html = '<div class="bar-track">';
+      for (let i = 0; i < safeParts; i++) {
+        const isFilled = i < filled;
+        html += `<div class="bar-cell" style="background:${isFilled ? color : '#f1f5f9'}"></div>`;
+      }
+      html += '</div>';
+      return html;
+    }
+
+    function update() {
+      const warningBox = document.getElementById('warningBox');
+      let nA = parseInt(document.getElementById('numA').value, 10);
+      let dA = parseInt(document.getElementById('denA').value, 10);
+      let nB = parseInt(document.getElementById('numB').value, 10);
+      let dB = parseInt(document.getElementById('denB').value, 10);
+
+      if (Number.isNaN(nA)) nA = 0;
+      if (Number.isNaN(nB)) nB = 0;
+      if (Number.isNaN(dA) || dA < 1) dA = 1;
+      if (Number.isNaN(dB) || dB < 1) dB = 1;
+
+      const warnings = [];
+      if (dA > 12 || dB > 12) {
+        warnings.push('建議分母設定在 1～12 之間，分數條切分會更清楚喔！');
+      }
+      if (currentOp === '-' && nA / dA < nB / dB) {
+        warnings.push('目前被減數小於減數，結果會是負數（國小階段通常建議被減數大於或等於減數）。');
+      }
+
+      if (warnings.length > 0) {
+        warningBox.textContent = warnings.join(' ');
+        warningBox.style.display = 'block';
+      } else {
+        warningBox.style.display = 'none';
+      }
+
+      const commonDen = lcm(dA, dB);
+      const multA = commonDen / dA;
+      const multB = commonDen / dB;
+      const eqNumA = nA * multA;
+      const eqNumB = nB * multB;
+
+      const rawNum = currentOp === '+' ? eqNumA + eqNumB : eqNumA - eqNumB;
+      const divisor = gcd(rawNum, commonDen);
+      const simpNum = rawNum / divisor;
+      const simpDen = commonDen / divisor;
+
+      // 更新結果顯示
+      const resultFrac = document.getElementById('resultFrac');
+      if (simpDen === 1) {
+        resultFrac.innerHTML = `<span>${simpNum}</span>`;
+      } else {
+        resultFrac.innerHTML = `<span>${simpNum}</span><div class="bar"></div><span>${simpDen}</span>`;
+      }
+
+      const mixedNote = document.getElementById('mixedNote');
+      if (simpDen > 1 && Math.abs(simpNum) > simpDen) {
+        const sign = simpNum < 0 ? '-' : '';
+        const absNum = Math.abs(simpNum);
+        const whole = Math.floor(absNum / simpDen);
+        const rem = absNum % simpDen;
+        mixedNote.textContent = rem === 0
+          ? `等於整數：${sign}${whole}`
+          : `帶分數：${sign}${whole} 又 ${rem}/${simpDen}`;
+      } else {
+        mixedNote.textContent = '';
+      }
+
+      // 更新視覺化卡片（以公分母切分，方便對齊比較）
+      const visGrid = document.getElementById('visualGrid');
+      const resFillForBar = Math.max(0, Math.min(rawNum, commonDen));
+      const resNote = rawNum > commonDen
+        ? `超過 1 個完整單位（共 ${rawNum}/${commonDen}）`
+        : rawNum < 0
+          ? '結果小於 0，未在 0～1 區間塗色'
+          : `佔 ${rawNum} / ${commonDen} 格`;
+
+      visGrid.innerHTML = `
+        <div class="vis-card">
+          <div class="vis-header">
+            <span>第一項：${nA}/${dA}</span>
+            <span>＝ ${eqNumA}/${commonDen}</span>
+          </div>
+          <div class="vis-sub">分母 ${dA} × ${multA} ＝ ${commonDen}，塗色 ${eqNumA} 格</div>
+          ${renderBar(commonDen, Math.max(0, Math.min(eqNumA, commonDen)), '#3b82f6')}
+        </div>
+        <div class="vis-card">
+          <div class="vis-header">
+            <span>第二項：${nB}/${dB}</span>
+            <span>＝ ${eqNumB}/${commonDen}</span>
+          </div>
+          <div class="vis-sub">分母 ${dB} × ${multB} ＝ ${commonDen}，塗色 ${eqNumB} 格</div>
+          ${renderBar(commonDen, Math.max(0, Math.min(eqNumB, commonDen)), '#8b5cf6')}
+        </div>
+        <div class="vis-card">
+          <div class="vis-header">
+            <span>${currentOp === '+' ? '相加結果' : '相減結果'}</span>
+            <span>${simpDen === 1 ? simpNum : `${simpNum}/${simpDen}`}</span>
+          </div>
+          <div class="vis-sub">${resNote}</div>
+          ${renderBar(commonDen, resFillForBar, '#10b981')}
+        </div>
+      `;
+
+      // 更新解題步驟
+      const stepsList = document.getElementById('stepsList');
+      const opText = currentOp === '+' ? '相加' : '相減';
+      const step1 = dA === dB
+        ? `<li><strong>步驟 1（找公分母）：</strong>${dA} 與 ${dB} 分母已經相同，公分母為 <strong>${commonDen}</strong>。</li>`
+        : `<li><strong>步驟 1（找公分母）：</strong>${dA} 和 ${dB} 的最小公倍數是 <strong>${commonDen}</strong>。</li>`;
+
+      const step2 = `
+        <li><strong>步驟 2（通分）：</strong>
+          ${nA}/${dA} ＝ (${nA}×${multA})/(${dA}×${multA}) ＝ <strong>${eqNumA}/${commonDen}</strong>；
+          ${nB}/${dB} ＝ (${nB}×${multB})/(${dB}×${multB}) ＝ <strong>${eqNumB}/${commonDen}</strong>。
+        </li>
+      `;
+
+      const step3 = `
+        <li><strong>步驟 3（分子${opText}）：</strong>
+          ${eqNumA}/${commonDen} ${currentOp} ${eqNumB}/${commonDen} ＝ <strong>${rawNum}/${commonDen}</strong>。
+        </li>
+      `;
+
+      const step4 = divisor > 1
+        ? `<li><strong>步驟 4（約分）：</strong>分子 ${rawNum} 與分母 ${commonDen} 的最大公因數是 ${divisor}，約分後得到 <strong>${simpDen === 1 ? simpNum : `${simpNum}/${simpDen}`}</strong>。</li>`
+        : `<li><strong>步驟 4（檢查最簡）：</strong>${rawNum}/${commonDen} 已經是最簡分數（或整數）。</li>`;
+
+      stepsList.innerHTML = step1 + step2 + step3 + step4;
+    }
+
+    update();
+  </script>
+</body>
+</html>
